@@ -8,7 +8,8 @@ class DMLabBase():
     are forward facing images (player pose is optionally provided), and episodes
     begin at random locations of user specified maps.
     '''
-    def __init__(self, frame_skip=5, use_debug=True, obs_shape=(100,60)):
+    def __init__(self, frame_skip=5, use_debug=True, obs_shape=(60,80)):
+        self.level_script = "gridmap_spawnpoints"
         self.frame_skip = frame_skip
 
         self.H, self.W = obs_shape
@@ -30,7 +31,7 @@ class DMLabBase():
         # call to load_map populates self.lab attribute
         self.lab = None 
 
-    def load_map(self, grid, use_variation=True):
+    def load_map_from_grid(self, grid, use_variation=True):
         '''
         Create level based on occupation grid (2D boolean array) where wall
         locations are True.  The boundary should be all True values.
@@ -52,11 +53,11 @@ class DMLabBase():
         if use_variation:
             configs['variation_map'] = self._create_room_variation_map(grid)
         
-        self.lab = deepmind_lab.Lab("gridworld_spawnpoints",
+        self.lab = deepmind_lab.Lab(self.level_script,
                                         list(self.obs_specs.values()),
                                         configs)
         self.lab.reset()
-        self.lab.step(np.zeros(7,dtype=np.intc), 30)
+        self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
     def reset(self):
         '''
@@ -103,7 +104,7 @@ class DMLabBase():
         '''
         lab_obs = self.lab.observations()
         obs = {}
-        for k,v in self.obs_specs:
+        for k,v in self.obs_specs.items():
             obs[k] = lab_obs[v]
         
         return obs
@@ -144,8 +145,13 @@ class DMLabBase():
         For all text-generated maps, each cell in the grid corresponds to 
         100 units.  DMLab uses bottom left as origin so we flip one axis
         '''
-        # offset by half a grid cell so player is in center of grid
         return 100.*np.array((grid_location[1], self.grid.shape[0]-grid_location[0]))
+
+    def _position_to_grid_location(self, position):
+        '''
+        Converts from position in level to corresponding location in grid space
+        '''
+        return np.array((self.grid.shape[0]-position[1]/100., position[0]/100.))
 
     def _create_text_map(self, grid):
         '''
@@ -226,17 +232,3 @@ class DMLabBase():
         
         variation_map = '\n'.join([''.join(row) for row in variation_map])
         return variation_map   
-
-if __name__ == "__main__":
-    grid = np.array(((1,1,1,1,1,1,1),
-                     (1,0,0,1,0,0,1),
-                     (1,0,0,1,0,0,1),
-                     (1,0,0,1,0,0,1),
-                     (1,0,0,0,0,0,1),
-                     (1,0,0,1,0,0,1),
-                     (1,1,1,1,1,1,1)), dtype=bool)
-
-    env = DMLabBase()
-    env.load_map(grid)
-
-
