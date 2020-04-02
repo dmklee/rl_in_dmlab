@@ -9,7 +9,7 @@ We provide several lua scripts designed to generate DMLab levels from text maps,
     $git clone https://github.com/deepmind/lab.git
 
 2. Clone this repo:
-    $git clone 
+    $git clone https://github.com/dmklee/rl_in_dmlab.git
 
 3. Add provided lua scripts to deepmind_lab :
     $cp rl_in_dmlab/level_scripts/*.lua lab/game_scripts/levels
