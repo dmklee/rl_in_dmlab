@@ -33,8 +33,10 @@ local DEFAULT_VARIATION_LAYER = [[
 ]]
 
 local game = require 'dmlab.system.game'
-local SCREEN = game:screenShape()
-local SHAPE = SCREEN.buffer
+-- local SCREEN = game:screenShape()
+-- local SHAPE = SCREEN.buffer
+local SHAPE = {width=100, height=100}
+
 
 local make_map = require 'common.make_map'
 local pickups = require 'common.pickups'
@@ -57,10 +59,10 @@ local api = {
     view_pose = {
       x='150', 
       y='150',
-      z='51',
-      yaw='0',
+      z='31.125',  --default height of player is 31.125
+      roll='0',
       pitch='0',
-      theta='0'
+      yaw='0'  -- this is rotation about z-axis, i.e. what agent does
     }
   }
 }
@@ -86,6 +88,8 @@ function api:init(params)
       useSkybox = true,
       textureSet = texture_sets.CUSTOMIZABLE_FLOORS
   }
+
+  api._goal = {x: 0, y: 0}
 end
 
 -- `make_map` has default pickup types A = apple_reward and G = goal.
@@ -115,12 +119,51 @@ function api:updateSpawnVars(spawnVars)
   elseif spawnVars.classname == "apple_reward" then
     -- use default height of 30
     spawnVars.origin = api._properties.goal_position.x .. " " .. api._properties.goal_position.y .. " 30"
+    api._goal = {x: tonumber(api._properties.goal_position.x), 
+                 y: tonumber(api._properties.goal_position.y),
+                 z: 30}
   end
   return spawnVars
 end
 
 -- add custom observations, this adds all DEBUG observations~~~
 custom_observations.decorate(api)
+
+-- Look from specified view_pose
+local function customView()
+  local function look()
+    local info = game:playerInfo()
+    local pos = {
+        tonumber(api._properties.view_pose.x),
+        tonumber(api._properties.view_pose.y),
+        tonumber(api._properties.view_pose.z)
+    }
+    local look = {
+      tonumber(api._properties.view_pose.roll),
+      tonumber(api._properties.view_pose.pitch),
+      tonumber(api._properties.view_pose.yaw)
+    }
+    local buffer = game:renderCustomView{
+        width = SHAPE.width,
+        height = SHAPE.height,
+        pos = pos,                      --array of numbers
+        look = look,                    --array of numbers
+        renderPlayer = false,
+    }
+    return buffer:clone()
+  end
+  return look
+end
+
+local function goalPosition()
+  return tensor.DoubleTensor({api._goal.x, api._goal.y, api._goal.z})
+end
+
+custom_observations.addSpec('DEBUG.CUSTOM_VIEW', 'Bytes',
+                            {SHAPE.width, SHAPE.height, 3}, customView())
+custom_observations.addSpec('DEBUG.GOAL_POSITION', 'Doubles', {3}, goalPosition)
+                    
+                            
 
 return api
 
