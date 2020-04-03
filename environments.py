@@ -59,18 +59,21 @@ class DMLabBase():
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
-    def reset(self):
+    def reset(self, start_pose, goal_position=(0,0)):
         '''
         Resets location of player in the loaded map.
         '''
         assert self.lab is not None, "No map has been loaded yet!"
 
-        x,y,theta = self._random_pose()
-
         # set new spawn pose
-        self.lab.write_property('params.spawn_pos.x', str(x))
-        self.lab.write_property('params.spawn_pos.y', str(y))
-        self.lab.write_property('params.spawn_pos.theta', str(theta))
+        self.lab.write_property('params.spawn_pose.x', str(start_pose[0]))
+        self.lab.write_property('params.spawn_pose.y', str(start_pose[1]))
+        self.lab.write_property('params.spawn_pose.theta', str(start_pose[2]))
+
+        # default goal_position places it off the map
+        self.lab.write_property('params.goal_position.x', str(goal_position[0]))
+        self.lab.write_property('params.goal_position.y', str(goal_position[1]))
+        
 
         # reset level, spawning agent at specified location
         self.lab.reset()
@@ -117,7 +120,7 @@ class DMLabBase():
         '''
         return lab_reward
 
-    def _random_pose(self):
+    def random_pose(self):
         '''
         Produce (x,y,theta) that is valid for current map.  
         Used by reset method to choose respawn location.
@@ -165,15 +168,15 @@ class DMLabBase():
         mapping = {True: "*", False: " "}
         string_map = ''
         M,N = grid.shape
-        first = True
         for i in range(M):
             for j in range(N):
                 char = mapping[grid[i,j]]
-                if char == " " and first:
-                    char = "P"
-                    first = False
                 string_map = string_map + char
             string_map = string_map + "\n"
+
+        # add spawn and goal 
+        string_map = string_map.replace(' ', 'P', 1)
+        string_map = string_map.replace(' ', 'A', 1)
         return string_map
 
     def _create_room_variation_map(self, grid):
@@ -232,3 +235,17 @@ class DMLabBase():
         
         variation_map = '\n'.join([''.join(row) for row in variation_map])
         return variation_map   
+
+if __name__ == "__main__":
+    grid = np.ones((5,5),dtype=bool)
+    grid[1:-1,1:-1] = 0
+
+    env = DMLabBase()
+    env.load_map_from_grid(grid)
+
+    import matplotlib.pyplot as plt 
+
+    obs = env.reset(env.random_pose())
+    plt.figure()
+    plt.imshow(obs['img'])
+    plt.savefig('here')
