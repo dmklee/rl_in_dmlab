@@ -1,5 +1,8 @@
 ## Environments for Reinforcement Learning with DeepMind Lab
-The purpose of this repo is to provide gym-like environments for training RL agents for navigation in DeepMind Lab levels. 
+The purpose of this repo is to provide gym-like environments for training RL agents for navigation in DeepMind Lab levels. Specifically, functionality is provided for:
+- loading new grid-like environments (for domain randomization during training)
+- resetting player spawn location and goal location (for goal-conditioned q-learning)
+- accessing custom observations of the maps (for learning latent encodings, or providing additional information to agents during training)
 
 ## How to use
 
