@@ -9,18 +9,18 @@ class DMLabBase():
     begin at random locations of user specified maps.
     '''
     def __init__(self, frame_skip=5, use_debug=True, obs_shape=(60,80)):
-        self.level_script = "gridmap_spawnpoints"
+        self.level_script = "gridmap_basic"
         self.frame_skip = frame_skip
 
         self.H, self.W = obs_shape
 
         self.obs_specs = {'img' : 'RGB_INTERLEAVED'}
-        if use_debug:
-            # these will be added to observation
-            # See link below on other possible debug observations
-            # https://github.com/deepmind/lab/blob/master/game_scripts/decorators/debug_observations.lua
-            self.obs_specs['position'] = 'DEBUG.POS.TRANS'
-            self.obs_specs['rotation'] = 'DEBUG.POS.ROT'
+        self.obs_specs['position'] = 'DEBUG.POS.TRANS'
+        self.obs_specs['rotation'] = 'DEBUG.POS.ROT'
+        self.obs_specs['custom_view'] = 'DEBUG.CUSTOM_VIEW'
+        self.obs_specs['goal_position'] = 'DEBUG.GOAL_POSITION'
+        self.obs_specs['top_down_view'] = 'DEBUG.TOP_DOWN_VIEW'
+        self.obs_specs['img_no_distractors'] = 'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW' #no distractors
 
         self.actions = [np.array((-20, 0, 0, 0, 0, 0, 0), dtype=np.intc),              # look left
                         np.array((20, 0, 0, 0, 0, 0, 0), dtype=np.intc),                # look right
@@ -104,6 +104,29 @@ class DMLabBase():
         info = {}
         
         return obs, reward, done, info
+
+    def player_position(self):
+        return self.lab.observations()['DEBUG.POS.TRANS'][:2]
+
+    def player_rotation(self):
+        return self.lab.observations()['DEBUG.POS.ROT'][1]
+    
+    def goal_position(self):
+        return self.lab.observations()['DEBUG.GOAL_POSITION'][:2]
+    
+    def custom_view(self, position, orientation):
+        self.lab.write_property('params.view_pose.x', str(position[0]))
+        self.lab.write_property('params.view_pose.y', str(position[1]))
+        self.lab.write_property('params.view_pose.z', str(position[2]))
+
+        self.lab.write_property('params.view_pose.roll', str(orientation[0]))
+        self.lab.write_property('params.view_pose.pitch', str(orientation[1]))
+        self.lab.write_property('params.view_pose.yaw', str(orientation[2]))
+
+        return self.lab.observations()['DEBUG.CUSTOM_VIEW']
+
+    def player_view(self):
+        return self.lab.observations()['RGB_INTERLEAVED']
 
     def _get_obs(self):
         '''
@@ -248,9 +271,15 @@ if __name__ == "__main__":
     env = DMLabBase()
     env.load_map_from_grid(grid, random_seed=2)
 
+    import pprint
+    pprint.pprint(env.lab.observation_spec())
+
     import matplotlib.pyplot as plt 
 
     obs = env.reset((150,150,0))
-    plt.figure()
-    plt.imshow(obs['img'])
+    obs = env.lab.observations()
+
+    f = plt.figure()
+    plt.imshow(obs['DEBUG.TOP_DOWN_VIEW'])
+
     plt.savefig('here')

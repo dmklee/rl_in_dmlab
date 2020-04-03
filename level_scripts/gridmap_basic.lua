@@ -159,9 +159,29 @@ local function goalPosition()
   return tensor.DoubleTensor({api._goal.x, api._goal.y, api._goal.z})
 end
 
+local function topDownView()
+  local info = game:playerInfo()
+  local pos = {
+      tonumber(api._properties.view_pose.x),
+      tonumber(api._properties.view_pose.y),
+      200 
+  }
+  local look = {90,0,0}
+  local buffer = game:renderCustomView{
+      width = SHAPE.width,
+      height = SHAPE.height,
+      pos = pos,                      --array of numbers
+      look = look,                    --array of numbers
+      renderPlayer = false,
+  }
+  return buffer:clone()
+end
+
 
 custom_observations.addSpec('DEBUG.CUSTOM_VIEW', 'Bytes',
                             {SHAPE.width, SHAPE.height, 3}, customView)
+custom_observations.addSpec('DEBUG.TOP_DOWN_VIEW', 'Bytes',
+                            {SHAPE.width, SHAPE.height, 3}, topDownView)
 custom_observations.addSpec('DEBUG.GOAL_POSITION', 'Doubles', {3}, goalPosition)
                     
                             
