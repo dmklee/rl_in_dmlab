@@ -58,7 +58,6 @@ local api = {
 property_decorator.decorate(api)
 property_decorator.addReadWrite('params', api._properties)
 
-
 -- Called only once at start up. Settings not recognised by DM Lab internal
 -- are forwarded through the params dictionary.
 function api:init(params)
@@ -72,8 +71,9 @@ function api:init(params)
       mapName = "demo_map_settings",
       mapEntityLayer = params.text_map,
       mapVariationsLayer = params.variation_map,
+      decalFrequency = 0.5,
       useSkybox = true,
-      textureSet = texture_sets.TETRIS
+      textureSet = texture_sets.CUSTOMIZABLE_FLOORS
   }
 end
 
@@ -103,7 +103,7 @@ local function angleLook(yaw)
     local pos = {
         tonumber(api._properties.view_pose.x),
         tonumber(api._properties.view_pose.y),
-        51.125 -- default height of player
+        31.125 -- default height of player
     }
     local look = game:playerInfo().angles
     look[2] = tonumber(api._properties.view_pose.theta) + yaw
