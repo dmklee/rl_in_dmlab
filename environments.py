@@ -31,7 +31,7 @@ class DMLabBase():
         # call to load_map populates self.lab attribute
         self.lab = None 
 
-    def load_map_from_grid(self, grid, use_variation=True):
+    def load_map_from_grid(self, grid, use_variation=True, random_seed=1):
         '''
         Create level based on occupation grid (2D boolean array) where wall
         locations are True.  The boundary should be all True values.
@@ -45,10 +45,14 @@ class DMLabBase():
         '''
 
         self.grid = grid.copy()
+
+        # all configs values must be strings
         configs = {'fps'            : '30',
                    'width'          : str(self.W),
                    'height'         : str(self.H),
-                   'text_map'       : self._create_text_map(grid)
+                   'text_map'       : self._create_text_map(grid),
+                   'random_seed'    : str(random_seed),
+                   'decalFrequency' : '0.1'
                    }
         if use_variation:
             configs['variation_map'] = self._create_room_variation_map(grid)
@@ -56,6 +60,7 @@ class DMLabBase():
         self.lab = deepmind_lab.Lab(self.level_script,
                                         list(self.obs_specs.values()),
                                         configs)
+
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
@@ -241,11 +246,11 @@ if __name__ == "__main__":
     grid[1:-1,1:-1] = 0
 
     env = DMLabBase()
-    env.load_map_from_grid(grid)
+    env.load_map_from_grid(grid, random_seed=2)
 
     import matplotlib.pyplot as plt 
 
-    obs = env.reset(env.random_pose())
+    obs = env.reset((150,150,0))
     plt.figure()
     plt.imshow(obs['img'])
     plt.savefig('here')

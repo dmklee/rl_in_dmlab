@@ -73,15 +73,16 @@ property_decorator.addReadWrite('params', api._properties)
 function api:init(params)
   params.text_map = params.text_map or DEFAULT_MAP
   params.variations = params.variations or DEFAULT_VARIATION_LAYER
-
-  -- Seed the map so only one map is created with lights and decals placed in
-  -- the same place each run.
-  make_map.random():seed(1)
+  params.random_seed = params.random_seed or "1"
+  params.decalFrequency = params.decalFrequency or "0.1"
+  
+  -- Seed changes light and decal positioning
+  make_map.random():seed(tonumber(params.random_seed))
   api._map = make_map.makeMap{
-      mapName = "demo_map_settings",
+      mapName = "custom_gridmap",
       mapEntityLayer = params.text_map,
       mapVariationsLayer = params.variations,
-      decalFrequency = 0.9,
+      decalFrequency = tonumber(params.decalFrequency),
       useSkybox = true,
       textureSet = texture_sets.CUSTOMIZABLE_FLOORS
   }
