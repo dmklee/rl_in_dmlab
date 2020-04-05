@@ -63,7 +63,8 @@ local api = {
       roll='0',
       pitch='0',
       yaw='0'  -- this is rotation about z-axis, i.e. what agent does
-    }
+    },
+    top_down_height = '200'
   },
   _goal = {
     x = 0,
@@ -161,11 +162,8 @@ end
 
 local function topDownView()
   local info = game:playerInfo()
-  local pos = {
-      tonumber(api._properties.view_pose.x),
-      tonumber(api._properties.view_pose.y),
-      200 
-  }
+  local pos = info.pos
+  pos[3] = tonumber(api._properties.top_down_height)
   local look = {90,0,0}
   local buffer = game:renderCustomView{
       width = SHAPE.width,

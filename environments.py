@@ -1,6 +1,7 @@
 import deepmind_lab
 import numpy as np 
 
+
 class DMLabBase():
     '''
     This implements simple functionality of DeepMindLab in a gym-like class
@@ -14,13 +15,15 @@ class DMLabBase():
 
         self.H, self.W = obs_shape
 
-        self.obs_specs = {'img' : 'RGB_INTERLEAVED'}
-        self.obs_specs['position'] = 'DEBUG.POS.TRANS'
-        self.obs_specs['rotation'] = 'DEBUG.POS.ROT'
-        self.obs_specs['custom_view'] = 'DEBUG.CUSTOM_VIEW'
-        self.obs_specs['goal_position'] = 'DEBUG.GOAL_POSITION'
-        self.obs_specs['top_down_view'] = 'DEBUG.TOP_DOWN_VIEW'
-        self.obs_specs['img_no_distractors'] = 'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW' #no distractors
+
+        self.obs_specs = ['RGB_INTERLEAVED',                      # player view with inventory visible
+                          'DEBUG.POS.TRANS',                      # player position (x,y,z)
+                          'DEBUG.POS.ROT',                        # player rotation (roll,pitch,yaw)
+                          'DEBUG.CUSTOM_VIEW',                    # view of level from arbitrary pose
+                          'DEBUG.GOAL_POSITION',                  # goal position (x,y,z)
+                          'DEBUG.TOP_DOWN_VIEW',                  # top down view of level above player
+                          'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW'  # player view without inventory distractors
+                         ]
 
         self.actions = [np.array((-20, 0, 0, 0, 0, 0, 0), dtype=np.intc),              # look left
                         np.array((20, 0, 0, 0, 0, 0, 0), dtype=np.intc),                # look right
@@ -58,9 +61,8 @@ class DMLabBase():
             configs['variation_map'] = self._create_room_variation_map(grid)
         
         self.lab = deepmind_lab.Lab(self.level_script,
-                                        list(self.obs_specs.values()),
+                                        self.obs_specs,
                                         configs)
-
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
@@ -125,20 +127,22 @@ class DMLabBase():
 
         return self.lab.observations()['DEBUG.CUSTOM_VIEW']
 
-    def player_view(self):
-        return self.lab.observations()['RGB_INTERLEAVED']
+    def player_view(self, with_distractors=True):
+        if distractors:
+            return self.lab.observations()['RGB_INTERLEAVED']
+        else:
+            return self.lab.observations()['DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW']
+
+    def top_down_view(self, height=200):
+        self.lab.write_property('params.top_down_height', str(height))
+        return self.lab.observations()['DEBUG.TOP_DOWN_VIEW']
 
     def _get_obs(self):
         '''
         Returns dictionary of observations specified in 
         self.obs_specs
         '''
-        lab_obs = self.lab.observations()
-        obs = {}
-        for k,v in self.obs_specs.items():
-            obs[k] = lab_obs[v]
-        
-        return obs
+        return self.lab.observations()
 
     def _get_reward(self, lab_reward):
         '''
@@ -194,13 +198,7 @@ class DMLabBase():
         changed after the DMlab level has been created.
         '''
         mapping = {True: "*", False: " "}
-        string_map = ''
-        M,N = grid.shape
-        for i in range(M):
-            for j in range(N):
-                char = mapping[grid[i,j]]
-                string_map = string_map + char
-            string_map = string_map + "\n"
+        string_map = '\n'.join([''.join([mapping[v] for v in row]) for row in grid])
 
         # add spawn and goal 
         string_map = string_map.replace(' ', 'P', 1)
@@ -271,15 +269,12 @@ if __name__ == "__main__":
     env = DMLabBase()
     env.load_map_from_grid(grid, random_seed=2)
 
-    import pprint
-    pprint.pprint(env.lab.observation_spec())
-
     import matplotlib.pyplot as plt 
 
     obs = env.reset((150,150,0))
-    obs = env.lab.observations()
+    # obs = env.lab.observations()
 
     f = plt.figure()
-    plt.imshow(obs['DEBUG.TOP_DOWN_VIEW'])
+    plt.imshow(env.top_down_view(100))
 
     plt.savefig('here')
