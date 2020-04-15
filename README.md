@@ -19,7 +19,7 @@ We provide several lua scripts designed to generate DMLab levels from text maps,
 
 4. Build and install DeepMind Lab Python package follwing instructions at https://github.com/deepmind/lab/tree/9c1e1b9eb0ee241d07066a81edf3de8d33e4a621/python/pip_package 
 
-To test that the python package was properly installed with the necessary level scripts run $python test.py
+To test that the python package was properly installed with the necessary level scripts run $python test_setup.py
 
 ## Features
 
