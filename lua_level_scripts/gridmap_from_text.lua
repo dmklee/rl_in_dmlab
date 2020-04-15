@@ -44,6 +44,7 @@ local texture_sets = require 'themes.texture_sets'
 local custom_observations = require 'decorators.custom_observations'
 local property_decorator = require 'decorators.property_decorator'
 
+
 local api = {
   _properties = {
     spawn_pose = {
@@ -94,6 +95,7 @@ function api:init(params)
       useSkybox = true,
       textureSet = texture_sets.CUSTOMIZABLE_FLOORS
   }
+  print(api._map)
 end
 
 -- `make_map` has default pickup types A = apple_reward and G = goal.
@@ -175,11 +177,35 @@ local function topDownView()
   return buffer:clone()
 end
 
+local function panorama()
+  local function angleLook(yaw)
+    local info = game:playerInfo()
+    local pos = {
+        tonumber(api._properties.view_pose.x),
+        tonumber(api._properties.view_pose.y),
+        31.125 -- default height of player
+    }
+    local look = game:playerInfo().angles
+    look[2] = tonumber(api._properties.view_pose.theta) + yaw
+    local buffer = game:renderCustomView{
+        width = SHAPE.width,
+        height = SHAPE.height,
+        pos = pos,                      --array of numbers
+        look = look,                    --array of numbers
+        renderPlayer = false,
+    }
+    return buffer:clone()
+  end
+  return look
+end
+
 
 custom_observations.addSpec('DEBUG.CUSTOM_VIEW', 'Bytes',
                             {SHAPE.width, SHAPE.height, 3}, customView)
 custom_observations.addSpec('DEBUG.TOP_DOWN_VIEW', 'Bytes',
                             {SHAPE.width, SHAPE.height, 3}, topDownView)
+custom_observations.addSpec('DEBUG.PANORAMA', 'Bytes',
+                            {4, SHAPE.width, SHAPE.height, 3}, panorama)
 custom_observations.addSpec('DEBUG.GOAL_POSITION', 'Doubles', {3}, goalPosition)
                     
                             

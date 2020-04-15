@@ -1,6 +1,6 @@
 import deepmind_lab
 import numpy as np 
-
+import os
 
 class DMLabBase():
     '''
@@ -9,12 +9,14 @@ class DMLabBase():
     are forward facing images (player pose is optionally provided), and episodes
     begin at random locations of user specified maps.
     '''
-    def __init__(self, frame_skip=5, use_debug=True, obs_shape=(60,80)):
-        self.level_script = "gridmap_basic"
+    def __init__(self, level_script="gridmap_from_text",
+                       frame_skip=5, 
+                       use_debug=True, 
+                       obs_shape=(60,80)):
+        self.level_script = level_script
         self.frame_skip = frame_skip
 
         self.H, self.W = obs_shape
-
 
         self.obs_specs = ['RGB_INTERLEAVED',                      # player view with inventory visible
                           'DEBUG.POS.TRANS',                      # player position (x,y,z)
@@ -34,7 +36,10 @@ class DMLabBase():
         # call to load_map populates self.lab attribute
         self.lab = None 
 
-    def load_map_from_grid(self, grid, use_variation=True, random_seed=1):
+    def load_map_from_grid(self, grid, 
+                            variation_style='room',
+                            decalFrequency=0.1, 
+                            random_seed=1):
         '''
         Create level based on occupation grid (2D boolean array) where wall
         locations are True.  The boundary should be all True values.
@@ -46,7 +51,6 @@ class DMLabBase():
                          (1,0,0,0,0,1),
                          (1,1,1,1,1,1)), dtype=bool)
         '''
-
         self.grid = grid.copy()
 
         # all configs values must be strings
@@ -55,16 +59,29 @@ class DMLabBase():
                    'height'         : str(self.H),
                    'text_map'       : self._create_text_map(grid),
                    'random_seed'    : str(random_seed),
-                   'decalFrequency' : '0.1'
+                   'decalFrequency' : str(decalFrequency)
                    }
-        if use_variation:
+        
+        if variation_style == 'none':
+            configs['variation_map'] = ''
+        elif variation_style == 'random':
+            configs['variation_map'] = self._create_random_variation_map(grid)
+        elif variation_style == 'room':
             configs['variation_map'] = self._create_room_variation_map(grid)
+        else:
+            raise TypeError('Unknown value for variation_style')
         
         self.lab = deepmind_lab.Lab(self.level_script,
                                         self.obs_specs,
                                         configs)
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
+
+    def load_compiled_map(self, name):
+        """
+        Given 
+        """
+        pass
 
     def reset(self, start_pose, goal_position=(0,0)):
         '''
@@ -262,19 +279,40 @@ class DMLabBase():
         variation_map = '\n'.join([''.join(row) for row in variation_map])
         return variation_map   
 
+    def _create_random_variation_map(self, grid):
+        """
+        Produce random variation map such that each free space is randomly
+        assigned a variation code
+        """
+        characters = "*ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        
+        variation_map = ''
+        random_grid = np.random.randint(low=1, high=len(characters), 
+                                    size=np.product(grid.shape)).reshape(grid.shape)
+        random_grid[grid] = 0
+        variation_map = '\n'.join([''.join([characters[i] for i in row]) for row in random_grid])
+        return variation_map
+
 if __name__ == "__main__":
     grid = np.ones((5,5),dtype=bool)
     grid[1:-1,1:-1] = 0
 
     env = DMLabBase()
     env.load_map_from_grid(grid, random_seed=2)
+    
+    import time
 
-    import matplotlib.pyplot as plt 
+    for i in range(100000):
+        env.step(0)
+        time.sleep(1)
+        print('-')
 
-    obs = env.reset((150,150,0))
-    # obs = env.lab.observations()
+    # import matplotlib.pyplot as plt 
 
-    f = plt.figure()
-    plt.imshow(env.top_down_view(100))
+    # obs = env.reset((150,150,0))
+    # # obs = env.lab.observations()
 
-    plt.savefig('here')
+    # f = plt.figure()
+    # plt.imshow(env.top_down_view(100))
+
+    # plt.savefig('here')
