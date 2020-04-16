@@ -17,7 +17,10 @@ We provide several lua scripts designed to generate DMLab levels from text maps,
 3. Add provided lua scripts to deepmind_lab :
     $cp rl_in_dmlab/level_scripts/*.lua lab/game_scripts/levels
 
-4. Build and install DeepMind Lab Python package follwing instructions at https://github.com/deepmind/lab/tree/9c1e1b9eb0ee241d07066a81edf3de8d33e4a621/python/pip_package 
+4. [OPTIONAL] Add any compiled bsp files to deepmind_lab :
+    $cp rl_in_dmlab/precompile_maps/bsp_files/*.bsp lab/assets/maps/built
+
+5. Build and install DeepMind Lab Python package follwing instructions at https://github.com/deepmind/lab/tree/9c1e1b9eb0ee241d07066a81edf3de8d33e4a621/python/pip_package 
 
 To test that the python package was properly installed with the necessary level scripts run $python test_setup.py
 
