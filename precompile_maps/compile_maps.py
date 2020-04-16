@@ -5,6 +5,10 @@ from zipfile import ZipFile
 from src.environments import DMLabBase
 
 TMP_DIR = "/../../tmp"
+# before running this, make sure there are no existing
+# dmlab_temp_folder_* folders in the tmp folder from earlier
+# builds
+
 DEFAULTDECALFREQUENCY=0.1
 DEFAULTRANDOMSEED=1
 
@@ -52,6 +56,7 @@ def compile_map(map_info):
                            map_info['mapEntityLayer'],
                            map_info['mapVariationsLayer'],
                            map_info['decalFrequency'],
+                           map_info['texture'],
                            map_info['randomSeed'])
 
     return env
@@ -90,6 +95,10 @@ if __name__ == "__main__":
     if check_no_temp_dirs():
         print("ERROR: existing temp. folders detected.\nDelete these and try again.")
     else:
+        # create dir where compiled bsp files will be placed
+        if not os.path.exists("precompile_maps/bsp_files"):
+            os.makedirs("precompile_maps/bsp_files")
+        
         for map_name in get_map_names():
             map_info = get_map_information(map_name)
             env = compile_map(map_info)
