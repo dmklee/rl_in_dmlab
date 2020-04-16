@@ -38,6 +38,7 @@ class DMLabBase():
     def load_map_from_grid(self, grid, 
                             variation_style='room',
                             decal_frequency=0.1, 
+                            texture="CUSTOMIZABLE_FLOORS",
                             random_seed=1):
         '''
         Create level based on occupation grid (2D boolean array) where wall
@@ -59,6 +60,7 @@ class DMLabBase():
                    'mapEntityLayer'  : self._create_text_map(grid),
                    'randomSeed'      : str(random_seed),
                    'decalFrequency'  : str(decal_frequency),
+                   'texture'         : texture,
                    'mapName'         : "example"
                    }
         
@@ -81,6 +83,7 @@ class DMLabBase():
                                  mapEntityLayer,
                                  mapVariationsLayer,
                                  decalFrequency,
+                                 texture,
                                  randomSeed):
         configs = {'fps'                 : '30',
                    'width'               : str(self.W),
@@ -89,6 +92,7 @@ class DMLabBase():
                    'mapVariationsLayer'  : mapVariationsLayer,
                    'decalFrequency'      : str(decalFrequency),
                    'randomSeed'          : str(randomSeed),
+                   'texture'             : texture,
                    'mapName'             : mapName
                    }
         
@@ -113,7 +117,6 @@ class DMLabBase():
         self.lab = deepmind_lab.Lab(self.level_script,
                                         self.obs_specs,
                                         configs)
-        self.lab.reset()
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
@@ -333,9 +336,6 @@ if __name__ == "__main__":
 
     env = DMLabBase()
     # env.load_map_from_grid(grid, random_seed=2)
-    env.load_compiled_map(grid, "example")
-
-    obs = env.reset(env.random_pose())['RGB_INTERLEAVED']
     
     # import matplotlib.pyplot as plt 
 

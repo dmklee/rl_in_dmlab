@@ -37,7 +37,7 @@ def get_map_information(map_name):
     with open(file_name, 'r') as file:
         for line in file:
             key,value = line[:-1].split('=')
-            if key in ["mapEntityLayer", "mapVariationsLayer"]:
+            if key in ["mapEntityLayer", "mapVariationsLayer", "texture"]:
                 value = value[1:-1] #remove quotation_marks
                 value = value.replace('\\n','\n')
             else:
