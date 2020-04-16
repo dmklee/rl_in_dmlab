@@ -42,8 +42,14 @@ def get_map_information(map_name):
             else:
                 value = float(value)
             map_info[key] = value
-    return map_info
 
+    if "P" not in map_info['mapEntityLayer']:
+        print("Added spawn location, make sure map has one spawn location.")
+        map_info['mapEntityLayer'].replace(" ", "P")
+    if "A" not in map_info['mapEntityLayer']:
+        print("Added goal location, make sure map has one goal location.")
+        map_info['mapEntityLayer'].replace(" ", "A")
+    return map_info
 
 def compile_map(map_info):
     """
