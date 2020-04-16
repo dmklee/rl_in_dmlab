@@ -23,7 +23,7 @@ class DMLabBase():
                           'DEBUG.GOAL_POSITION',                  # goal position (x,y,z)
                           'DEBUG.TOP_DOWN_VIEW',                  # top down view of level above player
                           'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW', # player view without inventory distractors
-                          'DEBUG.MAZE.LAYOUT',                    # mapEntityLayer
+                          'DEBUG.PANORAMA',                       # 4 images around player
                          ]
 
         self.actions = [np.array((-20, 0, 0, 0, 0, 0, 0), dtype=np.intc),              # look left
@@ -191,6 +191,10 @@ class DMLabBase():
         self.lab.write_property('params.top_down_height', str(height))
         return self.lab.observations()['DEBUG.TOP_DOWN_VIEW']
 
+    def panorama_view(self):
+        return self.lab.observations()['DEBUG.PANORAMA']
+
+
     def _get_obs(self):
         '''
         Returns dictionary of observations specified in 
@@ -335,14 +339,13 @@ if __name__ == "__main__":
     grid[1:-1,1:-1] = 0
 
     env = DMLabBase()
-    # env.load_map_from_grid(grid, random_seed=2)
+    env.load_map_from_grid(grid, random_seed=2)
     
-    # import matplotlib.pyplot as plt 
+    import matplotlib.pyplot as plt 
 
-    # obs = env.reset((150,150,0))
+    # env.reset((150,150,0))
     # # obs = env.lab.observations()
 
-    # f = plt.figure()
-    # plt.imshow(env.top_down_view(100))
-
-    # plt.savefig('here')
+    f = plt.figure()
+    plt.imshow(np.concatenate(env.panorama_view(),axis=1))
+    plt.savefig('here')
