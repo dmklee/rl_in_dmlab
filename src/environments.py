@@ -4,10 +4,13 @@ import os
 
 class DMLabBase():
     '''
-    This implements simple functionality of DeepMindLab in a gym-like class
-    where actions are move forward/backward and look left/right, observations
-    are forward facing images (player pose is optionally provided), and episodes
-    begin at random locations of user specified maps.
+    This class demonstrates the python interface for a number of features
+    in Deepmind Lab that may be useful for Reinforcement Learning.  This 
+    includes:
+        - using custom observations like panorama or top down view
+        - creating maps from occupation grids
+        - loading precompiled maps for faster training
+        - changing player spawn location & goal location between episodes
     '''
     def __init__(self, frame_skip=5, 
                        obs_shape=(60,80)):
@@ -194,10 +197,9 @@ class DMLabBase():
     def panorama_view(self):
         return self.lab.observations()['DEBUG.PANORAMA']
 
-
     def _get_obs(self):
         '''
-        Returns dictionary of observations specified in 
+        Returns dictionary of all observations specified in 
         self.obs_specs
         '''
         return self.lab.observations()

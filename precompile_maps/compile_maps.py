@@ -9,9 +9,6 @@ DEFAULTDECALFREQUENCY=0.1
 DEFAULTRANDOMSEED=1
 
 def get_map_names():
-    """
-    find all *.txt files in /to_be_compiled
-    """
     mypath = os.path.join(os.getcwd(), "precompile_maps/to_be_compiled")
     
     map_names = []
@@ -22,10 +19,6 @@ def get_map_names():
     return map_names
 
 def get_map_information(map_name):
-    """
-    look for map_name.npy
-    convert to numpy array and return
-    """
     file_name = os.path.join(os.getcwd(), 
                         "precompile_maps/to_be_compiled",
                         map_name+".txt")
@@ -53,9 +46,6 @@ def get_map_information(map_name):
     return map_info
 
 def compile_map(map_info):
-    """
-    use DMLabBase to compile text map into bsp
-    """
     env = DMLabBase()
 
     env.load_map_from_text(map_info['mapName'],
@@ -79,10 +69,6 @@ def get_tmp_dir():
             return os.path.join(TMP_DIR, f, 'baselab')
 
 def extract_bsp_file(map_name):
-    """
-    Get bsp file from tmp folder
-    and move to /bsp_files
-    """
     mypath = os.path.join(os.getcwd(), "precompile_maps/to_be_compiled")
     tmp_dir = get_tmp_dir()
 

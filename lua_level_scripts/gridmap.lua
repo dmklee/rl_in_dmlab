@@ -3,7 +3,6 @@
 local PI = 3.14159265359
 local SHAPE = {width=100, height=100} --default
 
-
 local game = require 'dmlab.system.game'
 local tensor = require 'dmlab.system.tensor'
 local make_map = require 'common.make_map'
@@ -11,7 +10,6 @@ local pickups = require 'common.pickups'
 local texture_sets = require 'themes.texture_sets'
 local custom_observations = require 'decorators.custom_observations'
 local property_decorator = require 'decorators.property_decorator'
-
 
 local api = {
   _properties = {
