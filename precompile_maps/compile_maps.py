@@ -39,6 +39,7 @@ def get_map_information(map_name):
             key,value = line[:-1].split('=')
             if key in ["mapEntityLayer", "mapVariationsLayer"]:
                 value = value[1:-1] #remove quotation_marks
+                value = value.replace('\\n','\n')
             else:
                 value = float(value)
             map_info[key] = value
@@ -56,11 +57,13 @@ def compile_map(map_info):
     use DMLabBase to compile text map into bsp
     """
     env = DMLabBase()
+
     env.load_map_from_text(map_info['mapName'],
                            map_info['mapEntityLayer'],
                            map_info['mapVariationsLayer'],
                            map_info['decalFrequency'],
                            map_info['randomSeed'])
+
     return env
 
 def check_no_temp_dirs():

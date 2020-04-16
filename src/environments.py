@@ -9,10 +9,9 @@ class DMLabBase():
     are forward facing images (player pose is optionally provided), and episodes
     begin at random locations of user specified maps.
     '''
-    def __init__(self, level_script="gridmap_from_text",
-                       frame_skip=5, 
+    def __init__(self, frame_skip=5, 
                        obs_shape=(60,80)):
-        self.level_script = level_script
+        self.level_script = "gridmap"
         self.frame_skip = frame_skip
 
         self.H, self.W = obs_shape
@@ -23,7 +22,8 @@ class DMLabBase():
                           'DEBUG.CUSTOM_VIEW',                    # view of level from arbitrary pose
                           'DEBUG.GOAL_POSITION',                  # goal position (x,y,z)
                           'DEBUG.TOP_DOWN_VIEW',                  # top down view of level above player
-                          'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW'  # player view without inventory distractors
+                          'DEBUG.CAMERA_INTERLEAVED.PLAYER_VIEW', # player view without inventory distractors
+                          'DEBUG.MAZE.LAYOUT',                    # mapEntityLayer
                          ]
 
         self.actions = [np.array((-20, 0, 0, 0, 0, 0, 0), dtype=np.intc),              # look left
@@ -53,20 +53,21 @@ class DMLabBase():
         self.grid = grid.copy()
 
         # all configs values must be strings
-        configs = {'fps'            : '30',
-                   'width'          : str(self.W),
-                   'height'         : str(self.H),
-                   'text_map'       : self._create_text_map(grid),
-                   'random_seed'    : str(random_seed),
-                   'decal_frequency' : str(decal_frequency)
+        configs = {'fps'             : '30',
+                   'width'           : str(self.W),
+                   'height'          : str(self.H),
+                   'mapEntityLayer'  : self._create_text_map(grid),
+                   'randomSeed'      : str(random_seed),
+                   'decalFrequency'  : str(decal_frequency),
+                   'mapName'         : "example"
                    }
         
         if variation_style == 'none':
-            configs['variation_map'] = ''
+            configs['mapVariationsLayer'] = ''
         elif variation_style == 'random':
-            configs['variation_map'] = self._create_random_variation_map(grid)
+            configs['mapVariationsLayer'] = self._create_random_variation_map(grid)
         elif variation_style == 'room':
-            configs['variation_map'] = self._create_room_variation_map(grid)
+            configs['mapVariationsLayer'] = self._create_room_variation_map(grid)
         else:
             raise TypeError('Unknown value for variation_style')
         
@@ -97,12 +98,24 @@ class DMLabBase():
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
-
-    def load_compiled_map(self, name):
+    def load_compiled_map(self, grid, mapName):
         """
         Given 
         """
-        pass
+        self.grid = grid.copy()
+
+        configs = {'fps'                 : '30',
+                   'width'               : str(self.W),
+                   'height'              : str(self.H),
+                   'mapName'             : mapName
+                   }
+        
+        self.lab = deepmind_lab.Lab(self.level_script,
+                                        self.obs_specs,
+                                        configs)
+        self.lab.reset()
+        self.lab.reset()
+        self.lab.step(np.zeros(7,dtype=np.intc), 10)
 
     def reset(self, start_pose, goal_position=(0,0)):
         '''
@@ -315,18 +328,15 @@ class DMLabBase():
         return variation_map
 
 if __name__ == "__main__":
-    grid = np.ones((5,5),dtype=bool)
+    grid = np.ones((3,5),dtype=bool)
     grid[1:-1,1:-1] = 0
 
     env = DMLabBase()
-    env.load_map_from_grid(grid, random_seed=2)
-    
-    import time
-    env.lab.close()
-    for i in range(100000):
-        time.sleep(1)
-        print('-')
+    # env.load_map_from_grid(grid, random_seed=2)
+    env.load_compiled_map(grid, "example")
 
+    obs = env.reset(env.random_pose())['RGB_INTERLEAVED']
+    
     # import matplotlib.pyplot as plt 
 
     # obs = env.reset((150,150,0))
