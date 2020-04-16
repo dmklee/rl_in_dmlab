@@ -55,6 +55,25 @@ function api:init(params)
   params.mapVariationsLayer = params.mapVariationsLayer or ""
   params.randomSeed = params.randomSeed or "1"
   params.decalFrequency = params.decalFrequency or "0.1"
+  params.texture = params.texture or "TETRIS"
+
+  if(params.texture == "TETRIS") then
+    params.texture = texture_sets.TETRIS
+  elseif(params.texture == "CUSTOMIZABLE_FLOORS") then
+    params.texture = texture_sets.CUSTOMIZABLE_FLOORS
+  elseif(params.texture == "MISHMASH") then
+    params.texture = texture_sets.MISHMASH
+  elseif(params.texture == "TRON") then
+    params.texture = texture_sets.TRON
+  elseif(params.texture == "MINESWEEPER") then
+    params.texture = texture_sets.MINESWEEPER
+  elseif(params.texture == "GO") then
+    params.texture = texture_sets.GO
+  elseif(params.texture == "PACMAN") then
+    params.texture = texture_sets.PACMAN
+  elseif(params.texture == "INVISIBLE_WALLS") then
+    params.texture = texture_sets.INVISIBLE_WALLS
+  end
   
   if (params.mapEntityLayer == "")
   then 
@@ -69,7 +88,7 @@ function api:init(params)
         mapVariationsLayer = params.mapVariationsLayer,
         decalFrequency = tonumber(params.decalFrequency),
         useSkybox = true,
-        textureSet = texture_sets.CUSTOMIZABLE_FLOORS
+        textureSet = params.texture
     }
   end
 end
