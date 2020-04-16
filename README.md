@@ -21,6 +21,10 @@ We provide several lua scripts designed to generate DMLab levels from text maps,
 
 To test that the python package was properly installed with the necessary level scripts run $python test_setup.py
 
+## How to Precompile Maps from Text Files
+Generate text files that follow the formatting in "/precompile_maps/to_be_compiled/example.txt".  Add all such text files to the to_be_compiled folder.  
+Run "$python -m precompile_maps.compile_maps" to populate the bsp_files folder with compiled bsp files. 
+
 ## Features
 
 - [ ] Create maps from occupation grids

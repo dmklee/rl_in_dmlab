@@ -1,0 +1,109 @@
+import numpy as np 
+import os
+from zipfile import ZipFile
+
+from src.environments import DMLabBase
+
+TMP_DIR = "/../../tmp"
+DEFAULTDECALFREQUENCY=0.1
+DEFAULTRANDOMSEED=1
+
+def get_map_names():
+    """
+    find all *.txt files in /to_be_compiled
+    """
+    mypath = os.path.join(os.getcwd(), "precompile_maps/to_be_compiled")
+    
+    map_names = []
+    for f in os.listdir(mypath):
+        fname, ext = f.split(".")
+        if ext == "txt":
+            map_names.append(fname)
+    return map_names
+
+def get_map_information(map_name):
+    """
+    look for map_name.npy
+    convert to numpy array and return
+    """
+    file_name = os.path.join(os.getcwd(), 
+                        "precompile_maps/to_be_compiled",
+                        map_name+".txt")
+
+    map_info = {'mapName'            : map_name,
+                'mapVariationsLayer' : "",
+                'decalFrequency'     : DEFAULTDECALFREQUENCY,
+                'randomSeed'         : DEFAULTRANDOMSEED}
+    with open(file_name, 'r') as file:
+        for line in file:
+            key,value = line[:-1].split('=')
+            if key in ["mapEntityLayer", "mapVariationsLayer"]:
+                value = value[1:-1] #remove quotation_marks
+            else:
+                value = float(value)
+            map_info[key] = value
+    return map_info
+
+
+def compile_map(map_info):
+    """
+    use DMLabBase to compile text map into bsp
+    """
+    env = DMLabBase()
+    env.load_map_from_text(map_info['mapName'],
+                           map_info['mapEntityLayer'],
+                           map_info['mapVariationsLayer'],
+                           map_info['decalFrequency'],
+                           map_info['randomSeed'])
+    return env
+
+def check_no_temp_dirs():
+    count = 0
+    for f in os.listdir(TMP_DIR):
+        if f.startswith("dmlab_temp_folder_"):
+            count += 1
+    return count
+
+def get_tmp_dir():
+    for f in os.listdir(TMP_DIR):
+        if f.startswith("dmlab_temp_folder_"):
+            return os.path.join(TMP_DIR, f, 'baselab')
+
+def extract_bsp_file(map_name):
+    """
+    Get bsp file from tmp folder
+    and move to /bsp_files
+    """
+    mypath = os.path.join(os.getcwd(), "precompile_maps/to_be_compiled")
+    tmp_dir = get_tmp_dir()
+
+    for f in os.listdir(tmp_dir):
+        zf = ZipFile(os.path.join(tmp_dir, f), 'r')
+        zf.extractall(tmp_dir)
+        zf.close()
+    
+    oldplace = os.path.join(tmp_dir, "maps", map_name+".bsp")
+    newplace = os.path.join(os.getcwd(), "precompile_maps",
+                            "bsp_files", map_name+".bsp")
+    # make sure file exists
+    f = open(newplace, 'a')
+    f.close()
+
+    os.rename(oldplace, newplace)
+
+if __name__ == "__main__":
+    if check_no_temp_dirs():
+        print("ERROR: existing temp. folders detected.\nDelete these and try again.")
+    else:
+        for map_name in get_map_names():
+            map_info = get_map_information(map_name)
+            env = compile_map(map_info)
+            extract_bsp_file(map_name)
+            env.lab.close()
+
+
+
+
+
+
+

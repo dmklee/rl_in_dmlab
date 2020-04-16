@@ -1,0 +1,4 @@
+mapEntityLayer='*****\n*PA *\n*   *\n*****'
+mapVariationsLayer="*****\n*AAA*\n*BBB*\n*****"
+decalFrequency=0.1
+randomSeed=1

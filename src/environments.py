@@ -11,7 +11,6 @@ class DMLabBase():
     '''
     def __init__(self, level_script="gridmap_from_text",
                        frame_skip=5, 
-                       use_debug=True, 
                        obs_shape=(60,80)):
         self.level_script = level_script
         self.frame_skip = frame_skip
@@ -38,7 +37,7 @@ class DMLabBase():
 
     def load_map_from_grid(self, grid, 
                             variation_style='room',
-                            decalFrequency=0.1, 
+                            decal_frequency=0.1, 
                             random_seed=1):
         '''
         Create level based on occupation grid (2D boolean array) where wall
@@ -59,7 +58,7 @@ class DMLabBase():
                    'height'         : str(self.H),
                    'text_map'       : self._create_text_map(grid),
                    'random_seed'    : str(random_seed),
-                   'decalFrequency' : str(decalFrequency)
+                   'decal_frequency' : str(decal_frequency)
                    }
         
         if variation_style == 'none':
@@ -76,6 +75,28 @@ class DMLabBase():
                                         configs)
         self.lab.reset()
         self.lab.step(np.zeros(7,dtype=np.intc), 10)
+
+    def load_map_from_text(self, mapName,
+                                 mapEntityLayer,
+                                 mapVariationsLayer,
+                                 decalFrequency,
+                                 randomSeed):
+        configs = {'fps'                 : '30',
+                   'width'               : str(self.W),
+                   'height'              : str(self.H),
+                   'mapEntityLayer'      : mapEntityLayer,
+                   'mapVariationsLayer'  : mapVariationsLayer,
+                   'decalFrequency'      : str(decalFrequency),
+                   'randomSeed'          : str(randomSeed),
+                   'mapName'             : mapName
+                   }
+        
+        self.lab = deepmind_lab.Lab(self.level_script,
+                                        self.obs_specs,
+                                        configs)
+        self.lab.reset()
+        self.lab.step(np.zeros(7,dtype=np.intc), 10)
+
 
     def load_compiled_map(self, name):
         """
@@ -301,9 +322,8 @@ if __name__ == "__main__":
     env.load_map_from_grid(grid, random_seed=2)
     
     import time
-
+    env.lab.close()
     for i in range(100000):
-        env.step(0)
         time.sleep(1)
         print('-')
 
