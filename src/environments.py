@@ -64,7 +64,7 @@ class DMLabBase():
                    'randomSeed'      : str(random_seed),
                    'decalFrequency'  : str(decal_frequency),
                    'texture'         : texture,
-                   'mapName'         : "example"
+                   'mapName'         : "custom_gridmap"
                    }
         
         if variation_style == 'none':
